@@ -1,5 +1,27 @@
+% 16-811 Fall 2019
+% Emma Benjaminson
+% Assignment 1
+% Problem 1
+
+%% 
+clc ; clear all ; close all ; 
+
+% test matrices; uncomment to run code on desired matrix A
+% matrix A1 from Problem 2
+% A = [10, 9, 2 ; 
+%      5, 3, 1 ; 
+%      2, 2, 2 ] ; 
+
+% matrix A3 from Problem 2
+A = [10, 6, 4 ; 
+     5, 3, 2 ; 
+     1, 1, 0 ] ; 
+ 
+[L,D,U,Aprime] = LUdecomp(A) 
+
+%% Function definition
+
 function [L,D,U,Aprime] = LUdecomp(A) 
-% function Aprime = LUdecomp(A)
     %LUdecomp performs the LU decomposition on the matrix A. It assumes A
     %is square and invertible. This function was written by Emma
     %Benjaminson and draws on information provided by: 
@@ -63,21 +85,3 @@ function [L,D,U,Aprime] = LUdecomp(A)
         end
     end
 end
-
-                % divide the i-th row by a_(i-1,j) to make the pivot = 1 
-%             A(i,j:m) = A(i,j:m)./A(i,j) ; 
-% %             A(i+1,j:m) = A(i+1,j:m).*L(i+1,j) ; 
-%                       
-%             % now subtract multiples of the i-th row (which now begins with 1)
-%             % from all other rows. The multiple is the first non-zero value
-%             % of the destination row, because this will zero out that
-%             % element in the matrix
-%             for k = [1:i-1 i+1:m] % goes through every row except the i-th row
-% %             for k = i+1:m % goes through all subsequent rows
-%                 L(k,i) = A(k,j) ; 
-%                 % save the division factor in L
-%                 L(k,j) = A(i+1,j)/A(i,j) ; 
-%                 L(k,k) = 1 ;
-%                 A(k,j:m) = A(k,j:m) - A(k,j).*A(i,j:n) ; 
-%             end
-%         end
