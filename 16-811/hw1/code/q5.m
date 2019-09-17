@@ -8,7 +8,7 @@ clc ; clear all ; close all ;
 
 %% definitions
 
-% matrix A is a 3 x 3 matrix where each row is a point, so each column is
+% matrix A is a 3 x 3 matrix where each column is a point, so each row is
 % [x, y, z] coordinates for that point
 
 %% create test points
@@ -41,13 +41,13 @@ B = Rtest*A + ttest ;
 
 % let's plot the points before and after
 figure(1) 
-scatter3(A(:,1),A(:,2),A(:,3)) ; 
+scatter3(A(1,:),A(2,:),A(3,:)) ; 
 labelsA = {'1','2','3'} ; 
-text(A(:,1),A(:,2),A(:,3),labelsA) ; 
+text(A(1,:),A(2,:),A(3,:),labelsA) ; 
 hold on 
-scatter3(B(:,1),B(:,2),B(:,3)) ; 
+scatter3(B(1,:),B(2,:),B(3,:)) ; 
 labelsB = {'1"','2"','3"'} ; 
-text(B(:,1),B(:,2),B(:,3),labelsB) ; 
+text(B(1,:),B(2,:),B(3,:),labelsB) ; 
 hold off 
 legend('A (before transform)','B (after transform)') ; 
 
@@ -55,6 +55,7 @@ legend('A (before transform)','B (after transform)') ;
 
 [R, t] = transformation(A,B) ; 
 
+% print and compare matrices
 R 
 
 Rtest
@@ -67,16 +68,22 @@ ttest
 
 function [R, t] = transformation(A, B) 
 
+    %transformation assumes that the input matrices A and B are square
+
+    %%%%%
+    % A %
+    %%%%%
+    
     % calculate centroid
-    nA = size(A,1)
-    Acen = (1/nA) * sum(A,1) % take the average of all the cols for the average centroid
+    nA = size(A,1) ;
+    Acen = (1/nA) * sum(A,2) ; % take the average of all the rows for the average centroid
     
     % find the vectors v that are the distance from each point to the
     % centroid
     vA = zeros(nA,nA) ; 
     
     for i = 1:nA
-        vA(i,:) = A(i,:) - Acen 
+        vA(i,:) = A(:,i) - Acen ;
     end
     
     %%%%%
@@ -84,16 +91,30 @@ function [R, t] = transformation(A, B)
     %%%%%
     
     % calculate centroid
-    nA = size(A,1)
-    Acen = (1/nA) * sum(A,1) % take the average of all the cols for the average centroid
+    nB = size(B,1) ;
+    Bcen = (1/nB) * sum(B,2) ; % take the average of all the cols for the average centroid
     
     % find the vectors v that are the distance from each point to the
     % centroid
-    vA = zeros(nA,nA) ; 
+    vB = zeros(nB,nB) ; 
     
-    for i = 1:nA
-        vA(i,:) = A(i,:) - Acen 
+    for i = 1:nB
+        vB(i,:) = B(:,i) - Bcen ;
     end 
     
+    %%%%%%%%%%%
+    % H, R, t %
+    %%%%%%%%%%%
     
+    H = vA*vB' ;
+    
+    [U,~,V] = svd(H) ; 
+    
+    X = V*U' ; 
+    
+    R = X ; 
+    
+    t = B(:,1) - R*A(:,1) ;    
+%     t2 = B(:,2) - R*A(:,2)  
+%     t3 = B(:,3) - R*A(:,3)  
 end
