@@ -23,6 +23,7 @@ plot(x,line,'-r');
 hold on 
 xlabel('x') ; ylabel('y') ; 
 
+% from inspection it looks like the root is at x = 3
 
 %% Perform Muller's method 
 
@@ -59,49 +60,89 @@ function xf = mullerMethod(p,fp)
     p1 = p(2) ; 
     p2 = p(3) ; 
     
-    f0 = p(1) ; 
-    f1 = p(2) ; 
-    f2 = p(3) ; 
-
-    % define h0 and h1
-    h0 = p0 - p2 ; 
-    h1 = p1 - p2 ; 
+    f0 = fp(1) ; 
+    f1 = fp(2) ; 
+    f2 = fp(3) ; 
     
-    % set c = f2
-    c = f2 ; 
-
-    % define e0 and e1
-    e0 = f0 - c ; 
-    e1 = f1 - c ; 
+    % epsilon
+    eps = 1e-3 ; 
     
-    % calculate a and b 
-    a = (e0*h1 - e1*h0) / (h1*(h0^2) - h0*(h1^2)) ; 
-    b = (e1*(h0^2) - e0*(h1^2)) / (h1*(h0^2) - h0*(h1^2)) ; 
+    % define p3new and p3old
+    p3old = p2 ; 
+    p3new = 0 ; 
     
-    % find the roots using modified quadratic formula
-    % if b > 0 use + ; if b < 0 use -
-    if b > 0 
-        z = (-2*c) / (b + sqrt((b^2) - 4*a*c)) ; 
-    elseif b < 0 
-        z = (-2*c) / (b - sqrt((b^2) - 4*a*c)) ;
-    end
-
-    % select the root with the smallest absolute value (DO I NEED THIS?)    
-
-    % calculate p3 
-    p3 = p2 + z ; 
-
-    % update the points for the next iteration by keeping the 2 points closest
-    % to p3 and discarding the furthest point
-    d = zeros(n,1) ; 
-    for i = 1:length(d) 
-        d(i) = abs(p3 - p(i)) ; 
-    end
-    
-    [~,I] = min(d) ; 
-    
-    
+    % define check
+    check = abs(p3new - p3old) ; 
 
     % repeat until abs(p3_new - p3_old) < epsilon
+    while check > eps
+        
+        % define h0 and h1
+        h0 = p0 - p2 ; 
+        h1 = p1 - p2 ; 
+
+        % set c = f2
+        c = f2 ; 
+
+        % define e0 and e1
+        e0 = f0 - c ; 
+        e1 = f1 - c ; 
+
+        % calculate a and b 
+        a = (e0*h1 - e1*h0) / (h1*(h0^2) - h0*(h1^2)) ; 
+        b = (e1*(h0^2) - e0*(h1^2)) / (h1*(h0^2) - h0*(h1^2)) ; 
+
+        % find the roots using modified quadratic formula
+        % if b > 0 use + ; if b < 0 use -
+%         if b > 0 
+%             z = (-2*c) / (b + sqrt((b^2) - 4*a*c)) ; 
+%         elseif b < 0 
+%             z = (-2*c) / (b - sqrt((b^2) - 4*a*c)) ;
+%         end
+        z1 = (-2*c) / (b + sqrt((b^2) - 4*a*c)) ;
+        z2 = (-2*c) / (b - sqrt((b^2) - 4*a*c)) ;
+
+        % select the root with the smallest absolute value 
+        if imag(z1) > imag(z2)
+            z = z2 ; 
+        elseif imag(z2) > imag(z1)
+            z = z1 ; 
+        end
+        
+        % use the absolute value (i.e. magnitude) of the root
+        z = z ; 
+
+        % calculate p3 
+        p3 = p2 + z ; 
+        
+        % define p3new and p3old
+        p3old = p2 ; 
+        p3new = p3 ; 
+
+        % define check
+        check = abs(p3new - p3old) ; 
     
+        % update the points for the next iteration by keeping the 2 points closest
+        % to p3 and discarding the furthest point 
+        pfull = [p0, p1, p2, p3] ; 
+        
+        d = zeros(length(pfull),1) ; 
+        
+        for i = 1:length(pfull) 
+            d(i) = abs(p3 - pfull(i)) ; 
+        end
+        
+        % delete furthest point from array
+        [~,I] = max(d) ; 
+        pfull(I) = [] ; 
+
+        % assign the remaining points for the next iteration
+        %pfull = sort(pfull) ;         
+        p0 = pfull(1) ; 
+        p1 = pfull(2) ; 
+        p2 = pfull(3) ;
+    end
+    
+    xf = p2 ; 
+            
 end

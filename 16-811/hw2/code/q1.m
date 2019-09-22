@@ -116,7 +116,6 @@ function pn = DivDiff(x,fx,xdes)
         f = msgbox("Sample point arrays x and fx do not have the same length.","Error") ; 
         return ; 
     end
-        
     
     % calculate b
     % the structure of b is: 
