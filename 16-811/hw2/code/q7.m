@@ -9,8 +9,8 @@ clc ; clear all ; close all ;
 
 %% Plot function to understand how it looks
 
-x = -5:0.1:5 ; 
-y = -5:0.1:5 ; 
+x = -5:0.1:10 ; 
+y = -5:0.1:10 ; 
 % zp = px(x,y) ;  
 % zq = qx(x,y) ;
 

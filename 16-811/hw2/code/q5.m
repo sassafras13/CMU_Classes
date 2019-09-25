@@ -65,7 +65,7 @@ function xf = mullerMethod(p,fp)
     f2 = fp(3) ; 
     
     % epsilon
-    eps = 1e-3 ; 
+    eps = 1e-1 ; 
     
     % define p3new and p3old
     p3old = p2 ; 
@@ -94,26 +94,26 @@ function xf = mullerMethod(p,fp)
 
         % find the roots using modified quadratic formula
         % if b > 0 use + ; if b < 0 use -
-%         if b > 0 
-%             z = (-2*c) / (b + sqrt((b^2) - 4*a*c)) ; 
-%         elseif b < 0 
-%             z = (-2*c) / (b - sqrt((b^2) - 4*a*c)) ;
-%         end
-        z1 = (-2*c) / (b + sqrt((b^2) - 4*a*c)) ;
-        z2 = (-2*c) / (b - sqrt((b^2) - 4*a*c)) ;
+        if b > 0 
+            z = (-2*c) / (b + sqrt((b^2) - 4*a*c)) ; 
+        elseif b < 0 
+            z = (-2*c) / (b - sqrt((b^2) - 4*a*c)) ;
+        end
+%         z1 = (-2*c) / (b + sqrt((b^2) - 4*a*c)) ;
+%         z2 = (-2*c) / (b - sqrt((b^2) - 4*a*c)) ;
 
         % select the root with the smallest absolute value 
-        if imag(z1) > imag(z2)
-            z = z2 ; 
-        elseif imag(z2) > imag(z1)
-            z = z1 ; 
-        end
+%         if imag(z1) > imag(z2)
+%             z = z2 ; 
+%         elseif imag(z2) > imag(z1)
+%             z = z1 ; 
+%         end
         
         % use the absolute value (i.e. magnitude) of the root
-        z = z ; 
+%         z = z ; 
 
         % calculate p3 
-        p3 = p2 + z ; 
+        p3 = p2 + real(z) ; 
         
         % define p3new and p3old
         p3old = p2 ; 

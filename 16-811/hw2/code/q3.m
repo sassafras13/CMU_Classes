@@ -2,7 +2,7 @@
 % Emma Benjaminson
 % Assignment 2
 % Problem 3
-% References: Dawkins, Paul. "Section 4-13: Newton's Method." Paul's Online Notes.
+% References: Dawkins, P. "Section 4-13: Newton's Method." Paul's Online Notes.
 % <http://tutorial.math.lamar.edu/Classes/CalcI/NewtonsMethod.aspx> Visited
 % 09/19/2019.
 
@@ -38,45 +38,30 @@ xlabel('x') ; ylabel('y') ;
 % function that meet these requirements should be around x0_low = 4.5 and
 % x0_high = 7.5
 
-eps = 0.1 ; % accuracy required from bisection
+eps = 0.001 ; % accuracy required from bisection
 k = 3 ; % number of decimal places of convergence for Newton's method
 
 % reference point
 xref = 7 ; 
 
-% 2 starting values
-x0_low = 6; 
-x0_high = 7; 
+[xf_low,xf_high] = bisection(xref,eps) ;
 
-% x0 = [x0_low, x0_high] ; 
-x0 = x0_high ; 
-
-xf = zeros(2,1) ; 
-
-for i = 1:length(x0)
-    % use bisection to get into the region of convergence
-    xf_bisection = bisection(x0(i),eps) ;
-
-    % use Newton's method to refine answer
-    format long
-    xf_newton = newtonmethod(xf_bisection,k) ; 
-    
-    xf(i) = xf_newton ; 
-end
-
-xf
+% use Newton's method to refine answer
+format long
+xf_low_newton = newtonmethod(xf_low,k) ; 
+xf_high_newton = newtonmethod(xf_high,k) ; 
 
 figure(f)
-plot(xf(1),0,'om','MarkerSize',10,'MarkerFaceColor','m') ; 
+plot(xf_low_newton,0,'om','MarkerSize',10,'MarkerFaceColor','m') ; 
 hold on 
-plot(xf(2),0,'om','MarkerSize',10,'MarkerFaceColor','m') ; 
+plot(xf_high_newton,0,'om','MarkerSize',10,'MarkerFaceColor','m') ; 
 hold off
 
 % check values are very high because the roots are right near poles of the
 % function, indicates I have found the roots correctly
-check_low = fx(xf(1)) 
+check_low = fx(xf_low_newton) 
 
-check_high = fx(xf(2))
+check_high = fx(xf_high_newton)
 
 %% Functions
 
@@ -106,46 +91,85 @@ function y = fpx(x)
     y = (sec(x))^2 - 1 ; 
 end
 
-function xf = bisection(x0, eps)
+function [xf_low,xf_high] = bisection(xref,eps)
 
-    % pick bracket [a,b] s.t. a > 0 and b < 0 or a < 0 and b > 0 
-    % initial bracket
-    xa = x0 - 5  
-    xb = x0 + 5  
-    ya = fx(xa)  
-    yb = fx(xb)  
+    % pick bracket [a,b] s.t. a < 0 and b > 0 for xf_high 
+    xah = xref - eps  ;
+    xbh = xref + eps  ;
+    yah = fx(xah)  ;
+    ybh = fx(xbh)  ;
+    
+    % if the brackets are the same sign, move them until a < 0 and b > 0 
+    if yah < 0 && ybh < 0 
+        while ybh < 0
+            xbh = xbh + eps ; 
+            ybh = fx(xbh) ; 
+        end
+    elseif ybh > 0 && yah > 0 
+        while yah > 0
+            xah = xah - eps ; 
+            yah = fx(xah) ; 
+        end
+    end
+    
+    % pick bracket [a,b] s.t. a > 0 and b < 0 for xf_low 
+    xal = xref - eps  ;
+    xbl = xref + eps  ;
+    yal = fx(xal) ;
+    ybl = fx(xbl) ; 
     
     % if the brackets are the same sign, move them until a > 0 and b < 0 
-    if ya < 0 && yb < 0 
-        while yb < 0
-            xb = xb - eps ; 
-            yb = fx(xb) ; 
+    if yal < 0 && ybl < 0 
+        while yal < 0
+            xal = xal - eps ; 
+            yal = fx(xal) ; 
         end
-    elseif yb > 0 && ya > 0 
-        while ya > 0
-            xa = xa + eps ; 
-            ya = fx(xa) ; 
+    elseif ybl > 0 && yal > 0 
+        while ybl > 0
+            xbl = xbl + eps ; 
+            ybl = fx(xbl) ; 
         end
     end
-
-    while abs(xa - xb) > eps
+    
+    while abs(xah - xbh) > eps
           
         % calculate midpoint (a + b)/2
-        xmid = (xa + xb) / 2  
-        ymid = fx(xmid)  
-        
+        xmidh = (xah + xbh) / 2 ; 
+        ymidh = fx(xmidh) ; 
+
         % assign midpoint to a or b depending on sign
-        if ymid > 0 && ya > 0
-            xa = xmid ; 
-        elseif ymid > 0 && yb > 0 
-            xb = xmid ; 
-        elseif ymid < 0 && ya < 0
-            xa = xmid ; 
-        elseif ymid < 0 && yb < 0
-            xb = xmid ; 
+        if ymidh > 0 && yah > 0
+            xah = xmidh ; 
+        elseif ymidh > 0 && ybh > 0 
+            xbh = xmidh ; 
+        elseif ymidh < 0 && yah < 0
+            xah = xmidh ; 
+        elseif ymidh < 0 && ybh < 0
+            xbh = xmidh ; 
         end
         
     end
     
-    xf = (xa + xb) / 2 ; 
+    xf_high = (xah + xbh) / 2 ; 
+    
+    while abs(xal - xbl) > eps
+          
+        % calculate midpoint (a + b)/2
+        xmidl = (xal + xbl) / 2 ; 
+        ymidl = fx(xmidl) ; 
+        
+        % assign midpoint to a or b depending on sign
+        if ymidl > 0 && yal > 0
+            xal = xmidl ; 
+        elseif ymidl > 0 && ybl > 0 
+            xbl = xmidl ; 
+        elseif ymidl < 0 && yal < 0
+            xal = xmidl ; 
+        elseif ymidl < 0 && ybl < 0
+            xbl = xmidl ; 
+        end
+        
+    end
+    
+    xf_low = (xal + xbl) / 2 ; 
 end

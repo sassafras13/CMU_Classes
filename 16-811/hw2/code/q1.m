@@ -2,7 +2,9 @@
 % Emma Benjaminson
 % Assignment 2
 % Problem 1
-
+% References: Kaw, A. and Keteltas, M. "Newton's Divided Difference
+% Interpolation." 23 Dec 2009.
+% <http://mathforcollege.com/nm/mws/gen/05inp/mws_gen_inp_txt_ndd.pdf> 
 %% Part (a) and (b)
 clc ; clear all ; close all ; 
 
@@ -38,6 +40,7 @@ for i = 1:k
 
     % run function to find interpolated value of fx given xdes
     xdes = 0.05 ; 
+    i
     pn = DivDiff(x,fx,xdes) 
 
     % compare to calculated value 
