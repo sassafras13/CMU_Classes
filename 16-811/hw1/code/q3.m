@@ -73,7 +73,7 @@ for i = 1:size(S2,1)
     end
 end
 
-% A2 has one unique solution
+% the solution closest to the origin is xbar
 xbar_A2 = V2*invS2*U2'*b2 
 
 %% Problem 3 Part (c)
