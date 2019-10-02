@@ -19,8 +19,11 @@ x = -3:0.1:3 ;
 fx = (1/3) + 2*sinh(x) ; 
 y = -0.5 + 0.1.*x + 2.*x.^2 ; 
 
-fig1 = figure(1)
-plot(x, fx, '-b') ; 
-hold on 
-plot(x, y, '-g') ; 
-title('Function f(x)') ; xlabel('x') ; ylabel('f(x)') ; 
+% fig1 = figure(1)
+% plot(x, fx, '-b') ; 
+% hold on 
+% plot(x, y, '-g') ; 
+% title('Function f(x)') ; xlabel('x') ; ylabel('f(x)') ; 
+
+ex_inf = abs(2*sinh(x) - 4.4856*x) ; 
+ex_inf = max(ex_inf) 
