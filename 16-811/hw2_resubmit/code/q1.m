@@ -14,6 +14,8 @@ x = [0, 1/8, 1/4, 1/2, 3/4, 1] ;
 % initialize fx array
 fx = q1b(x) ; 
 
+format long 
+
 % run function to find interpolated value of fx given xdes
 xdes = 1/3 ; 
 pn = DivDiff(x,fx,xdes) 
@@ -39,39 +41,40 @@ for i = 1:k
     fx = q1c_fx(x) ; 
 
     % run function to find interpolated value of fx given xdes
-    xdes = 0.05 ; 
-    i
-    n(i)
+    xdes = 0.05 ;
+    
+    num_samples = n(i)
     pn = DivDiff(x,fx,xdes) 
 
     % compare to calculated value 
     fxcalc = q1c_fx(xdes)
     
     % plot calculated and interpolated values
-    plot(n(i),pn,'or') 
+    plot(n(i),pn,'-or') 
     hold on
-    plot(n(i),fxcalc,'xb')
+    plot(n(i),fxcalc,'-xb')
     hold on
 end
 
 figure(1)
-title('Interpolated vs Calculated Values (red circles = interp, blue cross = calc)') ; 
+title('Interpolated vs Calculated Values') ; % (red circles = interp, blue cross = calc) 
 xlabel('# of Samples') ; ylabel('Value') ; 
+legend('Interpolated Values','Calculated Values') ; 
 
-%% CHECK
-
-n = 1000 ; 
-x = q1c_x(n) ; 
-fx = q1c_fx(x) ; 
-
-figure(3) 
-plot(x,fx,'o') ; 
-hold on 
-
-x05 = 0.05*ones(n,1) ; 
-
-figure(3)
-plot(x05,fx,'-r') ; 
+% %% CHECK
+% 
+% n = 1000 ; 
+% x = q1c_x(n) ; 
+% fx = q1c_fx(x) ; 
+% 
+% figure(3) 
+% plot(x,fx,'o') ; 
+% hold on 
+% 
+% x05 = 0.05*ones(n,1) ; 
+% 
+% figure(3)
+% plot(x05,fx,'-r') ; 
 
 %% Part (d)
 % clc ; clear all ; close all ; 
@@ -102,14 +105,14 @@ end
 
 % x for Problem 1(c)
 function x = q1c_x(n)
-    i = zeros(n,1) ; 
-    x = zeros(n,1) ; 
+    i = zeros(n+1,1) ; 
+    x = zeros(n+1,1) ; 
     
-    for j = 1:n
+    for j = 1:n+1
         i(j) = j-1 ; 
     end
     
-    for j = 1:n
+    for j = 1:n+1
         x(j) = i(j)*(2/n) - 1 ; 
     end
 end
@@ -126,17 +129,9 @@ end
 
 % divided difference function
 function pn = DivDiff(x,fx,xdes)
-
-    format long 
     
     % get number of sample points
     n = length(x) ; 
-    ncheck = length(fx) ; 
-    
-    if n ~= ncheck
-        f = msgbox("Sample point arrays x and fx do not have the same length.","Error") ; 
-        return ; 
-    end
     
     % calculate b
     % the structure of b is: 
@@ -144,71 +139,30 @@ function pn = DivDiff(x,fx,xdes)
     %      fx2 , b11 , 0 ,   0 ...
     %      fx3 , b12 , b21 , 0 ...
     %      fx4 , b13 , b22 , b31 ...]
-    % b = j rows x i columns
+    % b = r rows x c columns
     
     % initialize b
     b = zeros(n,n) ; 
-    
-    format long 
-    
+        
     % first column of b uses fx values
-    for j = 1:n
-            b(j,1) = vpa(fx(j),8) ; 
+    for r = 1:n
+        b(r,1) = fx(r) ; 
     end
     
     
     % columns 2:n are calculated values of b
-    for i = 2:n
-        for j = (1 + (i-1)):n 
-            b(j,i) = ( b(j,(i-1)) - b((j-1),(i-1)) ) / ( x(j) - x(j-1) ) ; 
-            b ;
+    for c = 2:n
+        for r = c:n 
+            b(r,c) = ( b((r-1),(c-1)) - b(r,(c-1)) ) / ( x(r-c+1) - x(r) ) ; 
         end
-    end        
-    
-%     % find starting x values
-%     % search for xlow which is less than xdes and xhi which is greater than
-%     % xdes
-%     % xlow and xhi should bracket xdes
-%     % save the indices of xlow and xhi, these should be used to build the
-%     % polynomial starting with index of xlow, and expanding up to larger
-%     % values
-%     for j = 1:(n-1)
-%         xlow = x(j) ; 
-%         jlow = j ; 
-%         xhigh = x(j+1) ; 
-%         
-%         if xlow < xdes && xhigh > xdes
-%             break
-%         end
-%     end
-%     
-%     b
-%     
-%     % build polynomial px
-%     % solve px for xdes
-%     px = b(jlow,1) ; 
-%     xmultiplier = 1 ; 
-%     
-%     j = jlow ; % start looping through jlow-th row and go down
-%     i = 2 ; 
-%     
-%     while j <= n && i <= n 
-%         xmultiplier = xmultiplier * (xdes - x(j)) ; % calculate (x - xi)
-%         px = px + b(j,i)*xmultiplier ;   % add new term to polynomial
-%         j = j + 1 ; % increase row index by 1 
-%         i = i + 1 ; % increase column index by 1
-% 
-%     end
+    end   
 
-    j = 2 ; i = 2 ; 
-    px = b(1,1) ; 
-    xmultiplier = 1 ; 
+    px = b(1,1)  ;
+    xmultiplier = xdes - x(1)  ;
     
-    while j <= n && i <= n
-        xmultiplier = xmultiplier * (xdes - x(j-1)) ; 
-        px = px + b(j,i)*xmultiplier ; 
-        j = j + 1 ; 
-        i = i + 1 ; 
+    for i = 2:n
+        px = px + b(i,i)*xmultiplier  ;
+        xmultiplier = xmultiplier * (xdes - x(i)) ; 
     end
     
     pn = px ; 
