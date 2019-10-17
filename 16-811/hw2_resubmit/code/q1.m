@@ -61,21 +61,6 @@ title('Interpolated vs Calculated Values') ; % (red circles = interp, blue cross
 xlabel('# of Samples') ; ylabel('Value') ; 
 legend('Interpolated Values','Calculated Values') ; 
 
-% %% CHECK
-% 
-% n = 1000 ; 
-% x = q1c_x(n) ; 
-% fx = q1c_fx(x) ; 
-% 
-% figure(3) 
-% plot(x,fx,'o') ; 
-% hold on 
-% 
-% x05 = 0.05*ones(n,1) ; 
-% 
-% figure(3)
-% plot(x05,fx,'-r') ; 
-
 %% Part (d)
 % clc ; clear all ; close all ; 
 
