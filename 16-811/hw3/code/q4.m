@@ -8,10 +8,24 @@ clear all ; close all ; clc ;
 
 %% part a 
 fid = fopen('clear_table.txt') ; 
+% data = textscan(fid, '%10f %10f %10f') ; 
+% xi = data{1,1} ; 
+% yi = data{1,2} ; 
+% zi = data{1,3} ; 
+% 
+% data = [xi, yi, zi] ; 
 
 [x, y, z, xi, yi, zi,xbar] = LSplane(fid) ;
 
-E = LSerror(xi,yi,zi,xbar)
+% E = LSerror(xi,yi,zi,xbar)
+
+D = xbar(1) ; 
+A = xbar(2) ; 
+B = xbar(3) ; 
+C = -1 ; 
+
+d = DistPointPlane(data,A,B,C,D) ; 
+e = mean(d) 
 
 figure(1)
 plot3(xi,yi,zi,'ob') ; 
@@ -240,9 +254,6 @@ function [x, y, z, xi, yi, zi,xbar] = LSplane(fid)
 
     A = [phi1, phi2, phi3] ; 
 
-    % check matrix
-%     invA = inv(A) 
-%     nullA = null(A) 
 
     [U,S,V] = svd(A) ;
 
@@ -258,8 +269,8 @@ function [x, y, z, xi, yi, zi,xbar] = LSplane(fid)
                 end
         end
     end
-
-    xbar = V*invS'*U*zi ;
+    xbar = 1; 
+    xbar = V*invS'*U'*zi ;
 
     [x, y] = meshgrid(-1.5:0.01:1.5,0.2:0.001:0.5) ; 
     
@@ -267,8 +278,12 @@ function [x, y, z, xi, yi, zi,xbar] = LSplane(fid)
 
 end
 
+function d = DistPointPlane(sample,A,B,C,D)
+    d = abs(A*sample(:,1) + B*sample(:,2) + C*sample(:,3) + D) / sqrt(A^2 + B^2 + C^2) ; 
+end
+
 function E = LSerror(xi,yi,zi,xbar)
-    z = xbar(1) + xbar(2)*xi + xbar(3)*yi ; 
+    z = -1*(xbar(1) + xbar(2)*xi + xbar(3)*yi) ; 
     
     p = zi - z ; 
     p2 = p.^2 ; 

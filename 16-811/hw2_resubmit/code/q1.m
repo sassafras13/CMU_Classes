@@ -62,13 +62,55 @@ xlabel('# of Samples') ; ylabel('Value') ;
 legend('Interpolated Values','Calculated Values') ; 
 
 %% Part (d)
-% clc ; clear all ; close all ; 
+clc ; clear all ; close all ; 
 
 % initialize sample size 
 n = [2,4,6,8,10,12,14,16,18,20,40] ; 
 
-% calculate maximum error for given sample size
-En = MaxError(n)
+% initialize x interval with fine resolution
+xint = -1:0.001:1 ; 
+
+% initialize En array
+En = zeros(length(n),1) ; 
+
+% initialize for loop parameters
+k = length(n) ; 
+
+for i = 1:k
+    
+    % initialize x array
+    x = q1c_x(n(i)) ; 
+
+    % initialize fx array
+    fx = q1c_fx(x) ; 
+    
+    % initialize error array 
+    error = zeros(length(xint),1) ; 
+
+    for j = 1:length(xint) 
+        % run function to find interpolated value of fx given xdes
+        xdes = xint(j) ;
+
+        num_samples = n(i) ; 
+        pn = DivDiff(x,fx,xdes) ; 
+
+        % compare to calculated value 
+        fxcalc = q1c_fx(xdes) ; 
+        
+        error(j,1) = abs(fxcalc - pn) ; 
+    end
+    
+    En(i,1) = max(error) ; 
+    
+%     % plot calculated and interpolated values
+%     plot(n(i),pn,'-or') 
+%     hold on
+%     plot(n(i),fxcalc,'-xb')
+%     hold on
+end
+
+% % calculate maximum error for given sample size
+% En = MaxError(n)
 
 figure(2)
 plot(n,En,'or') 
