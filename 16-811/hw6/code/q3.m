@@ -1,24 +1,20 @@
 % 16-811 Fall 2019
 % Emma Benjaminson
 % Assignment 6
-% Problem 2
+% Problem 3
 % References: 
-% [1] https://stackoverflow.com/questions/3838329/how-can-i-check-if-two-segments-intersect
-% [2] http://www.cs.kent.edu/~dragan/ST-Spring2016/visibility%20graphs.pdf
-% [3] https://medium.com/basecs/finding-the-shortest-path-with-a-little-help-from-dijkstra-613149fbdc8e
-% [4] https://brilliant.org/wiki/dijkstras-short-path-finder/
 
-%%
-clc ; clear all ; close all ;
+%% 
+
+clc ; clear all ; close all ; 
 
 %% Main
 
 %%%%%%%%%%%%%%%%%%%%%%%%
 % START AND END POINTS %
 %%%%%%%%%%%%%%%%%%%%%%%%
-% take in the start point and the goal point
-start = [1,1] ; 
-goal = [120,120] ; 
+start = [60,10] ; 
+goal = [80,120] ; 
 
 figure(1)
 plot(start(1), start(2), 'or') 
@@ -26,14 +22,52 @@ hold on
 plot(goal(1), goal(2), 'or') 
 hold on 
 
+%%%%%%%%%%%%%%%%%%%%
+% ROBOT DEFINITION %
+%%%%%%%%%%%%%%%%%%%%
+
+% robot can be a triangle or square
+maxvrob = 4 ; 
+
+% generate a convex shape that is relatively small compared to the field
+maxLrob = 10 ; 
+
+Nvrob = 1 ; % need to set a condition to force number of vertices to be at least 3
+
+while Nvrob < 3
+    Nvrob = round(maxvrob*rand(1)) ; % number of vertices on the obstacle
+    offset = round(1*rand(1)) ; % offset of location of convex obstacle
+end
+    
+robot = convexRobot(Nvrob,maxLrob,offset,start) ;
+rpgon = polyshape(robot(:,1),robot(:,2)) ; 
+
+figure(1)
+plot(rpgon)
+
 %%%%%%%%%%%%%
 % OBSTACLES %
 %%%%%%%%%%%%%
 
+% % test case 
+% obs1 = [23.7419481717711,21.8355184838470;
+%     10.9968327307603,26.3784354666083;
+%     7.22067220437597,23.8584317432227;
+%     10.9497463953031,10.5179912689242;
+%     20.4531415921717,7.40407200466227] ; 
+% 
+% obs2 = [56.7686587708850,52.2691084254849;
+%     58.3479296357241,55.0693596845456;
+%     56.9153913407616,57.0941961378756;
+%     44.2893992806548,57.3883427869337;
+%     45.2075715685289,40.6059758471756] ; 
+% 
+% obstacles = {obs1 ; obs2} ; 
+
 % generate a list of obstacles which are convex polygons
-No = 2 ; % number of obstacles
+No = 15 ; % number of obstacles
 maxV = 10 ; % maximum number of vertices permitted in one obstacle
-maxL = 50 ; % maximum length of an obstacle
+maxL = 10 ; % maximum length of an obstacle
 
 obstacles = {} ; % initialize an empty cell array that can contain all obstacle data
 
@@ -49,7 +83,7 @@ for i = 1:No
     pgon = polyshape(finalx(:,1),finalx(:,2),'Simplify',false) ; 
     obstacles(i,:) = {finalx} ; % add the list of points to the obstacles cell array
     
-%     color = [rand(1), rand(1), rand(1)] ; % set color at random for this obstacle
+    color = [rand(1), rand(1), rand(1)] ; % set color at random for this obstacle
     
     figure(1)
     plot(pgon)
@@ -65,17 +99,84 @@ for i = 1:No
 
 end
 
-% obstacles = [   44.3019   52.0579 ;
-%    36.9086   46.3763 ;
-%    53.0475   40.3065 ] ; 
-% No = 1 ; 
+%%%%%%%%%%%%%%%%%%%%
+% REDRAW OBSTACLES %
+%%%%%%%%%%%%%%%%%%%%
+
+% reflect the robot about the x and y axes
+robot = -1*robot ; 
+
+% figure(1)
+% subplot(2,1,1)
+% for i = 1:(length(robot)-1)
+%     plot(robot((i:i+1),1),robot((i:i+1),2),'-r')
+%     hold onfor i = 1:No
+% end
+% plot([robot(end,1),robot(1,1)],[robot(end,2),robot(1,2)],'-r')
+% hold on 
+
+% calculate the vectors to the two vertices of the robot (not the origin)
+point = [0,0] ; 
+i = 1 ; 
+while point ~= [-start(1),-start(2)] 
+    point = robot(i,:) ; 
+    index = i ; 
+    i = i + 1 ; 
+end
+
+robot(index,:) = [] ; 
+d = zeros(size(robot,1),2) ; 
+
+for i = 1:size(robot,1) 
+    d(i,:) = robot(i,:) - point ; 
+end
+    
+% create a new cell containing new obstacles
+newobstacles = cell(No) ; 
+
+% add the reflected robot to the vertices of all the obstacles 
+for i = 1:No
+    obstacle = obstacles{i} ; 
+    
+    nv = size(obstacle,1) ; 
+    newobstacle = [obstacle] ; 
+    
+    for j = 1:nv 
+        
+        for k = 1:size(d,1)
+            newobstacle = [newobstacle ; obstacle(j,:) + d(k,:)] ; 
+        end
+    end
+    
+    newobstacles{i} = newobstacle ; 
+end       
+
+% redefine the obstacles with these new vertices 
+newConvexObstacles = {} ; 
+
+for i = 1:No
+    x = newobstacles{i} ; 
+    
+    finalx = convexNewObstacle(x) ; 
+    pgon = polyshape(finalx(:,1),finalx(:,2)) ; 
+    
+    newConvexObstacles(i,:) = {finalx} ; % add the list of points to the obstacles cell array
+    
+    color = [rand(1), rand(1), rand(1)] ; % set color at random for this obstacle
+    
+    figure(1)
+    plot(finalx(:,1), finalx(:,2), 'o', 'color', color) 
+    hold on
+    plot(pgon)
+    hold on 
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % CHECK IF START/END IS INSIDE OBSTACLE %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 for i = 1:No
-    obs = obstacles{i} ; 
+    obs = newConvexObstacles{i} ; 
     
     alertStart = isContained(start,obs) ; 
     alertGoal = isContained(goal,obs) ; 
@@ -94,7 +195,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%
 
 % generate visGraph for start point
-visGraphStart = visGraphGen(start, obstacles) ; 
+visGraphStart = visGraphGen(start, newConvexObstacles) ; 
 
 n = size(visGraphStart,1) ; 
 
@@ -109,14 +210,14 @@ visGraphObs = [] ;
 
 % run through each obstacle
 for i = 1:No
-    obstacle = obstacles{i} ; 
+    obstacle = newConvexObstacles{i} ; 
 %     obstacle = obstacles ; 
     vertices = size(obstacle,1) ; 
     
     % for each vertex in each obstacle, get the visibility graph for that
     % vertex and add to the list of visibility graph for all obstacles
     for j = 1:vertices
-        vG = visGraphGenObs(obstacle(j,:),obstacles) ; 
+        vG = visGraphGenObs(obstacle(j,:),newConvexObstacles) ; 
         visGraphObs = [visGraphObs ; vG] ; 
     end
 end
@@ -130,7 +231,7 @@ n = size(visGraphObs,1) ;
 % end
 
 % generate visGraph for goal point
-visGraphEnd = visGraphGen(goal, obstacles) ; 
+visGraphEnd = visGraphGen(goal, newConvexObstacles) ; 
 
 temp = visGraphEnd ; 
 visGraphEnd(:,1:2) = temp(:,3:4) ; 
@@ -144,11 +245,9 @@ n = size(visGraphEnd,1) ;
 %     hold on
 % end
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%
 % DIJKSTRA'S ALGORITHM %
 %%%%%%%%%%%%%%%%%%%%%%%%
-
 % put all the visibility graphs into one variable
 Graph = [visGraphStart ; visGraphObs; visGraphEnd ] ; 
 
@@ -158,11 +257,11 @@ Nn = 2 ;
 Nodes = [start] ; 
 
 for i = 1:No
-    n = length(obstacles{i}) ;
+    n = length(newConvexObstacles{i}) ;
 %     n = 3 ; 
     Nn = Nn + n ;
-    Nodes = [Nodes ; obstacles{i}] ;
-%     Nodes = [Nodes ; obstacles] ; 
+    Nodes = [Nodes ; newConvexObstacles{i}] ;
+%     Nodes = [Nodes ; newConvexObstacles] ; 
 end
 
 Nodes = [Nodes ; goal] ; 
@@ -172,7 +271,7 @@ Nodes = [Nodes ; goal] ;
 %     plot([Graph(i,1),Graph(i,3)],[Graph(i,2),Graph(i,4)],'-k') ; 
 %     hold on
 % end
-% 
+
 % for i = 1:length(Nodes)
 %     plot(Nodes(i,1),Nodes(i,2),'or') 
 %     hold on
@@ -190,39 +289,51 @@ for i = 1:(length(waypoints)-1)
 end
 
 figure(1)
-title('HW3 Q2') ; xlabel('X') ; ylabel('Y') ; 
-
-%% Extra Code
-
-% % test case for intersection function
-% L1 = [1, 1 ; 5, 4] ; 
-% L2 = [2, 3 ; 5, 1] ; 
-% L3 = [1, 4 ; 5, 7] ; 
-% result1 = intersection(L1, L2) ;
-% result2 = intersection(L2, L3) ;
-
-%%% TEST CASE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% test1 = [36.3756   20.3943 ;
-%    30.2903   32.0053 ;
-%    18.1838   24.5737 ;
-%    17.4860   14.2309 ;
-%    24.5264   12.0560 ] ;
-% 
-%     color = [rand(1), rand(1), rand(1)] ; % set color at random for this obstacle
-%     
-% figure(1)
-% 
-% plot(test1(:,1), test1(:,2), 'o', 'color', color) 
-% hold on
-% for i = 1:(length(test1)-1)
-%     plot(test1(i:i+1, 1), test1(i:i+1, 2), '-', 'color', color)
-% end
-% hold on
-% plot([test1(end,1),test1(1,1)], [test1(end,2),test1(1,2)],'-', 'color', color)
-% hold on
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+title('HW6 Q3') ; xlabel('X') ; ylabel('Y') ; 
 
 %% Functions
+
+function finalx = convexRobot(Nv,maxL,offset,start)
+    
+    % run a function to generate a set of n random points in 2D space
+    x = randpoints((Nv-1),maxL,offset) ; 
+    x = [x ; start] ; 
+
+    % look for the point that has the smallest y value
+    % if there are multiple such points, choose the one with the largest x
+    % value
+    [originy, ii] = min(x(:,2)) ; % ii is the index of the minimum value
+
+    % set the minimum value as the origin and remove it from the list of points
+    origin = [x(ii,1), originy] ; 
+    x(ii,:) = [] ; 
+
+    % calculate the angle between the origin and all other points in the
+    % set
+    angles = calcangles(origin, x) ; 
+
+    % sort all the points by the size of the angles calculated above
+    % if 2 points have the same angle we choose the one closer to the chosen
+    % point
+    x = [x, angles] ; % adds angles data as a column to x matrix of points
+    x = sortrows(x, 3) ; % sorts matrix x by angle size
+    x = [origin, 0 ; x] ; % add back in a row for the origin at the beginning 
+
+    % now take 3 points in a row out of this sorted stack
+    stack = [] ;
+    stack = [stack ; x(1:2,:)] ;
+
+    for i = 3:length(x) 
+        while length(stack) > 1 && isconvex(stack(end-1,1:2),stack(end,1:2),x(i,1:2)) == 0 
+            stack(end,:) = [] ; 
+        end
+        stack = [stack ; x(i,:)] ; 
+    end
+
+    finalx = stack(:,1:2) ; 
+
+end
+
 
 function finalx = convexObstacle(Nv,maxL,offset)
     
@@ -263,6 +374,45 @@ function finalx = convexObstacle(Nv,maxL,offset)
     finalx = stack(:,1:2) ; 
 
 end
+
+
+function finalx = convexNewObstacle(x)
+
+    % look for the point that has the smallest y value
+    % if there are multiple such points, choose the one with the largest x
+    % value
+    [originy, ii] = min(x(:,2)) ; % ii is the index of the minimum value
+
+    % set the minimum value as the origin and remove it from the list of points
+    origin = [x(ii,1), originy] ; 
+    x(ii,:) = [] ; 
+
+    % calculate the angle between the origin and all other points in the
+    % set
+    angles = calcangles(origin, x) ; 
+
+    % sort all the points by the size of the angles calculated above
+    % if 2 points have the same angle we choose the one closer to the chosen
+    % point
+    x = [x, angles] ; % adds angles data as a column to x matrix of points
+    x = sortrows(x, 3) ; % sorts matrix x by angle size
+    x = [origin, 0 ; x] ; % add back in a row for the origin at the beginning 
+
+    % now take 3 points in a row out of this sorted stack
+    stack = [] ;
+    stack = [stack ; x(1:2,:)] ;
+
+    for i = 3:length(x) 
+        while length(stack) > 1 && isconvex(stack(end-1,1:2),stack(end,1:2),x(i,1:2)) == 0 
+            stack(end,:) = [] ; 
+        end
+        stack = [stack ; x(i,:)] ; 
+    end
+
+    finalx = stack(:,1:2) ; 
+
+end
+
 
 function x = randpoints(Nv,maxL,offset)
     x = maxL*rand([Nv,2]) + offset ; % scale the random numbers so they are between 0 and 100
@@ -353,11 +503,11 @@ function result = intersection(L1, L2)
     
     % if there is a point of intersection its x value will be
     xa = (b2 - b1) / (m1 - m2) ; 
-    xa = xa + 0.1*rand(1) ; 
+    xa = xa + 0.01*rand(1) ; 
     
     % and its y value will be
     ya = m1*xa + b1 ; 
-    ya = ya + 0.1*rand(1) ; 
+    ya = ya + 0.01*rand(1) ; 
     
     % now check that xa lies within the interval Ia
     if ((xa - eps) < Ixa(1) || (xa + eps) > Ixa(2)) && ((ya - eps) < Iya(1) || (ya + eps) > Iya(2))
@@ -421,11 +571,11 @@ function result = intersectionObs(L1, L2)
     
     % if there is a point of intersection its x value will be
     xa = (b2 - b1) / (m1 - m2) ; 
-    xa = xa + 1*rand(1) ; 
+    xa = xa + 0.1*rand(1) ; 
     
     % and its y value will be
     ya = m1*xa + b1 ; 
-    ya = ya + 1*rand(1) ; 
+    ya = ya + 0.1*rand(1) ; 
     
     % now check that xa lies within the interval Ia
     if ((xa - eps) < Ixa(1) || (xa + eps) > Ixa(2)) && ((ya - eps) < Iya(1) || (ya + eps) > Iya(2))
@@ -481,6 +631,10 @@ function visGraph = visGraphGenObs(point, obstacles)
 
             % join the start point to the jth vertex
             L1 = [point, obstacle(j,:)] ;
+            
+            % check if the line segments traverse the interior of the
+            % obstacle
+            resultTraverse = checkTraverse(L1,obstacle) ; 
 
             results = zeros(Ne,1) ; 
 
@@ -495,8 +649,11 @@ function visGraph = visGraphGenObs(point, obstacles)
             end
 
             % if L1 does not intersect any edge, add L1 to visGraph
-            if sum(results) == 0 
+            if sum(results) == 0 && resultTraverse == 0
                 visGraph = [visGraph ; L1] ; 
+%                 figure(1)
+%                 subplot(2,1,1)
+%                 plot([L1(1),L1(3)],[L1(2),L1(4)],'-b') ; 
             end
         end
     end
@@ -531,6 +688,10 @@ function visGraph = visGraphGen(point, obstacles)
 
             % join the start point to the jth vertex
             L1 = [point, obstacle(j,:)] ; 
+            
+            % check if the line segments traverse the interior of the
+            % obstacle
+            resultTraverse = checkTraverse(L1,obstacle) ; 
 
 %             figure(2)
 %             plot([L1(1),L1(3)],[L1(2),L1(4)],'-r')
@@ -549,7 +710,7 @@ function visGraph = visGraphGen(point, obstacles)
             end
 
             % if L1 does not intersect any edge, add L1 to visGraph
-            if sum(results) == 0 
+            if sum(results) == 0 && resultTraverse == 0
                 visGraph = [visGraph ; L1] ; 
             end
         end
@@ -669,4 +830,17 @@ function alert = isContained(point,obs)
         alert = true ; 
     end
     
+end
+
+function resultTraverse = checkTraverse(L1,obstacle)
+    
+    % calculate the midpoint of L1
+    midL1 = [(L1(1) + L1(3))/2 , (L1(2) + L1(4))/2] ; 
+    
+%     figure(1)
+%     subplot(2,1,1)
+%     plot([midL1(1),midL1(1)+100],[midL1(2),midL1(2)],'-r') 
+%     hold on
+    
+    resultTraverse = isContained(midL1,obstacle) ; 
 end
