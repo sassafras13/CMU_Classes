@@ -8,12 +8,7 @@ clear all ; close all ; clc ;
 
 %% part a 
 fid = fopen('clear_table.txt') ; 
-% data = textscan(fid, '%10f %10f %10f') ; 
-% xi = data{1,1} ; 
-% yi = data{1,2} ; 
-% zi = data{1,3} ; 
-% 
-% data = [xi, yi, zi] ; 
+
 
 [x, y, z, xi, yi, zi,xbar] = LSplane(fid) ;
 
@@ -23,6 +18,13 @@ D = xbar(1) ;
 A = xbar(2) ; 
 B = xbar(3) ; 
 C = -1 ; 
+
+data = textscan(fid, '%10f %10f %10f') ; 
+xi = data{1,1} ; 
+yi = data{1,2} ; 
+zi = data{1,3} ; 
+
+data = [xi, yi, zi] ; 
 
 d = DistPointPlane(data,A,B,C,D) ; 
 e = mean(d) 

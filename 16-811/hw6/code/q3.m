@@ -4,6 +4,10 @@
 % Problem 3
 % References: 
 
+% [1] Allen, Peter K. "Robot Path Planning."
+% http://www.cs.columbia.edu/~allen/F17/NOTES/lozanogrown.pdf Visited
+% 11/20/2019.
+
 %% 
 
 clc ; clear all ; close all ; 

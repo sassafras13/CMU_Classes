@@ -3,11 +3,11 @@
 % Assignment 6
 % Problem 1
 % References: 
-% Sommer, Pascal. "A gentle introduction to the convex hull problem." 
+% [1] Sommer, Pascal. "A gentle introduction to the convex hull problem." 
 % https://medium.com/@pascal.sommer.ch/a-gentle-introduction-to-the-convex-hull-problem-62dfcabee90c
 % Visited 11/10/2019.
 
-% Wikipedia. "Graham scan." https://en.wikipedia.org/wiki/Graham_scan
+% [2] Wikipedia. "Graham scan." https://en.wikipedia.org/wiki/Graham_scan
 % Visited 11/20/2019.
 
 %%
@@ -16,7 +16,7 @@ clc ; clear all ; close all ;
 %% 
 
 % run a function to generate a set of n random points in 2D space
-n = 100000 ; 
+n = 100 ; 
 x = randpoints(n) ; 
 
 % plot the points
